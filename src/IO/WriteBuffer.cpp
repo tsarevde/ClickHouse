@@ -51,6 +51,15 @@ void WriteBuffer::write(const char * from, size_t n)
     while (bytes_copied < n)
     {
         nextIfAtEnd();
+
+        if (working_buffer.empty() || pos == nullptr || pos < working_buffer.begin() || pos >= working_buffer.end())
+        {
+            throw Exception(ErrorCodes::LOGICAL_ERROR,
+                "WriteBuffer::write(): invalid working buffer state. "
+                "Buffer is empty or pos is outside of buffer. Bytes copied: {}, Total: {}",
+                bytes_copied, n);
+        }
+
         size_t bytes_to_copy = std::min(static_cast<size_t>(working_buffer.end() - pos), n - bytes_copied);
         memcpy(pos, from + bytes_copied, bytes_to_copy);
         pos += bytes_to_copy;
