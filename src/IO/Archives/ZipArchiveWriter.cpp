@@ -187,9 +187,17 @@ private:
 
     static unsigned long writeFileFunc(void * opaque, void *, const void * buf, unsigned long size) // NOLINT(google-runtime-int)
     {
-        auto * stream_info = reinterpret_cast<StreamInfo *>(opaque);
-        stream_info->write_buffer->write(reinterpret_cast<const char *>(buf), size);
-        return size;
+        try
+        {
+            auto * stream_info = reinterpret_cast<StreamInfo *>(opaque);
+            stream_info->write_buffer->write(reinterpret_cast<const char *>(buf), size);
+            return size;}
+        catch (...)
+        {
+            // TODO: Исправить костыль
+            LOG_ERROR(&Poco::Logger::get("WriteBufferZip"), "Exception during writeFileFunc(), returning 0 to avoid crash");
+            return 0;
+        }
     }
 
     static int testErrorFunc(void *, void *) { return ZIP_OK; }
